@@ -1,6 +1,8 @@
 const Movie = require('../../models/Movie');
 // const Review = require('../../models/Movie');
 const Theatre = require('../../models/Theatre');
+const Showtime = require("../../models/Showtime");
+const Booking = require("../../models/Booking");
 const multer = require('multer');
 const path = require('path');
 
@@ -82,29 +84,93 @@ const showMovie = async (req, res) => {
     }
   };
 
-// const showMovie = async (req, res) => {
-//     try {
-//         // Fetch all movies with populated theatres
-//         const movies = await Movie.find({}).populate('theatres').exec();
+  const deleteMovie = async (req,res) => {
+    if (req.method === 'DELETE') {
+        const { movieId } = req.query;
+    
+        try {
+          const result = await Movie.findByIdAndDelete(movieId);
+          const deletedShows = await Showtime.find({ movie: movieId });
 
-//         // Create a mapping of theatre IDs to names
-//         const theatreIds = movies.flatMap(movie => movie.theatres);
-//         const theatreNames = await Theatre.find({ _id: { $in: theatreIds } });
-//         const theatreNameMap = theatreNames.reduce((map, theatre) => {
-//             map[theatre._id] = theatre.name;
-//             return map;
-//         }, {});
+      // Extract the show IDs for use in updating bookings
+      const showIds = deletedShows.map(show => show._id);
 
-//         // Add theatre names to each movie
-//         movies.forEach(movie => {
-//             movie.theatreNames = movie.theatres.map(id => theatreNameMap[id] || 'Unknown');
-//         });
+      // Delete the shows
+      await Showtime.deleteMany({ movie: movieId });
 
-//         res.json(movies);
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-//   };
+      // 3. Update the bookings to remove or nullify references to the deleted shows
+      await Booking.updateMany(
+        { showId: { $in: showIds } },
+        { $unset: { showId: '' } } // Remove showId from the bookings
+      );
+    
+          if (!result) {
+            return res.status(404).json({ error: 'Movie not found' });
+          }
+    
+          res.status(200).json({ message: 'Movie deleted successfully' });
+        } catch (error) {
+          res.status(500).json({ error: 'Failed to delete movie', details: error.message });
+        }
+      } else {
+        res.status(405).json({ error: 'Method not allowed' });
+      }
+  }
+
+  const deleteTheatre = async (req,res) => {
+    if (req.method === 'DELETE') {
+        const { id } = req.query;
+    
+        try {
+          const result = await Theatre.findByIdAndDelete(id);
+          const deletedShows = await Showtime.find({ theatre: id });
+
+      // Extract the show IDs for use in updating bookings
+      const showIds = deletedShows.map(show => show._id);
+
+      // Delete the shows
+      await Showtime.deleteMany({ theatre: id });
+
+      // 3. Update the bookings to remove or nullify references to the deleted shows
+      await Booking.updateMany(
+        { showId: { $in: showIds } },
+        { $unset: { showId: '' } } // Remove showId from the bookings
+      );
+    
+          if (!result) {
+            return res.status(404).json({ error: 'Theatre not found' });
+          }
+    
+          res.status(200).json({ message: 'Theatre deleted successfully' });
+        } catch (error) {
+          res.status(500).json({ error: 'Failed to delete Theatre', details: error.message });
+        }
+      } else {
+        res.status(405).json({ error: 'Method not allowed' });
+      }
+  }
+
+
+  const deleteShow = async (req,res) => {
+    if (req.method === 'DELETE') {
+        const { id } = req.query;
+    
+        try {
+          const result = await Showtime.findByIdAndDelete(id);
+    
+          if (!result) {
+            return res.status(404).json({ error: 'Movie not found' });
+          }
+    
+          res.status(200).json({ message: 'Movie deleted successfully' });
+        } catch (error) {
+          res.status(500).json({ error: 'Failed to delete movie', details: error.message });
+        }
+      } else {
+        res.status(405).json({ error: 'Method not allowed' });
+      }
+  }
+
 
 const addTheatre = async (req, res) => {
     try {
@@ -142,4 +208,4 @@ const addTheatre = async (req, res) => {
 
 
 
-module.exports = {addTheatre, addMovie, showTheatre, showMovie};
+module.exports = {addTheatre, addMovie, showTheatre, showMovie,deleteMovie,deleteTheatre,deleteShow};

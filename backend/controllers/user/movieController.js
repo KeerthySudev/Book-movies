@@ -52,8 +52,8 @@ const searchMovie = async (req, res) => {
   
       try {
         console.log('hi')
-        // Replace this with your actual API call to verify the Aadhaar number
-        const apiResponse = await fetch('http://www.omdbapi.com/?t=Inception&i=tt3896198&apikey=625da2dc', {
+        
+        const apiResponse = await fetch('http://www.omdbapi.com/?t=aavesham&i=tt3896198&apikey=625da2dc', {
           method: 'POST',
           body: JSON.stringify({  }),
         });
@@ -109,7 +109,6 @@ const searchMovie = async (req, res) => {
         const shows = await Showtime.findById(id)
         .populate('movie', 'title')  
         .populate('theatre', 'name');
-        console.log("showtimes:", shows);
         res.json(shows);
     } catch (error) {
         res.status(500).json({ error: error.message });

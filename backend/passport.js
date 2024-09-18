@@ -24,21 +24,30 @@ async (accessToken, refreshToken, profile, done) => {
       user.email = profile.emails[0].value;
       await user.save();
     }
+    // console.log( profile.emails[0].value);
     done(null, user);
   } catch (error) {
     done(error, null);
   }
 }));
 
+
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  console.log('Serialized user ID:', user.id);
+  done(null,user.id);
 });
 
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (obj, done) => {
+  const userId = obj.id || obj;  
+
   try {
-    const user = await User.findById(id);
+    const user = await User.findById(userId); 
+    if (!user) {
+      return done(new Error('User not found'), null);
+    }
     done(null, user);
   } catch (error) {
     done(error, null);
   }
 });
+

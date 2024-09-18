@@ -38,9 +38,13 @@ const registerUser = async (req, res) => {
 };
 
 const emailVerify = async (req, res) => {
-  // Extract the email from the request body
-  const { mail } = req.body; 
-  const email = 'keerthysudev33@gmail.com'
+
+  // if (!req.isAuthenticated()) {
+  //   return res.status(401).json({ message: 'User is not authenticated' });
+  // }
+  //  console.log(req.user.email);
+  const email = 'keerthysudev33@gmail.com';
+  
   // Use req.body instead of body.query
 
   // Example email for demonstration

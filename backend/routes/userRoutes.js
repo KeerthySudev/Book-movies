@@ -9,6 +9,8 @@ const { getSeatings} = require('../controllers/user/movieController');
 const { confirmBooking} = require('../controllers/user/bookingController');
 const { payment} = require('../controllers/user/bookingController');
 const { verifyPayment} = require('../controllers/user/bookingController');
+const { bookings} = require('../controllers/user/bookingController');
+const { handler} = require('../controllers/user/whatsappController');
 
 const router = express.Router();
 
@@ -23,6 +25,8 @@ router.get('/getSeatings', getSeatings);
 router.post('/confirmBooking', confirmBooking);
 router.post('/payment', payment);
 router.post('/verify-payment', verifyPayment);
+router.get('/bookings', bookings);
+router.post('/send-whatsapp', handler);
 
 // Export the router to be used in the main server file
 

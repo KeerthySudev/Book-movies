@@ -1,5 +1,7 @@
 const Showtime = require("../../models/Showtime");
 const Booking = require("../../models/Booking");
+const Movie = require("../../models/Movie");
+const Theatre = require("../../models/Theatre");
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
@@ -48,7 +50,7 @@ const payment = async (req, res) => {
 // backend/routes/payment.js (continue)
 const verifyPayment = async (req, res) => {
   try {
-    const { paymentId, orderId, signature, seats, showId } = req.body;
+    const { paymentId, orderId, signature, seats, showId, userId } = req.body;
 
     const generatedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
@@ -71,16 +73,6 @@ const verifyPayment = async (req, res) => {
       }
     );
 
-    // Update the booking status in the database
-    // const updatedBooking = await Booking.findOneAndUpdate(
-    //   { orderId },
-      // { 
-      //   paymentStatus: 'Paid',
-      //   razorpayPaymentId: paymentId,
-      //   razorpaySignature: signature
-      // },
-    //   { new: true }
-    // );
 
     const existingOrder = await Booking.findOne({ orderId });
 
@@ -151,4 +143,38 @@ const confirmBooking = async (req, res) => {
   }
 };
 
-module.exports = { confirmBooking, payment,verifyPayment };
+const bookings = async (req, res) => {
+ 
+
+  if (req.method === 'GET') {
+    try {
+      const { userId } = req.query;
+
+      // Fetch the bookings for the user
+      const bookings = await Booking.find({ userId }).populate('showId').exec();
+
+      // Create an array to hold the detailed booking information
+      const detailedBookings = await Promise.all(bookings.map(async (booking) => {
+        const show = await Showtime.findById(booking.showId);
+        const movie = await Movie.findById(show.movie);
+        const theatre = await Theatre.findById(show.theatre);
+
+        return {
+          ...booking.toObject(),
+          showDetails: show,
+          movieDetails: movie,
+          theatreDetails: theatre,
+        };
+      }));
+      res.status(200).json(detailedBookings);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch booking details', details: error.message });
+    }
+  } else {
+    res.status(405).json({ error: 'Method not allowed' });
+  }
+}
+
+
+
+module.exports = { confirmBooking, payment,verifyPayment, bookings };
