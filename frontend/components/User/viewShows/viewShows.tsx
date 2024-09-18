@@ -46,29 +46,7 @@ const ViewShows = () => {
     <>
       
       <div>
-            {shows ? (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Theatre</th>
-                            <th>Time</th>
-                            <th>Price</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        
-                        {shows.map((show) => (
-                            <tr key={show._id}>
-                                <td>{show.theatre.name}</td>
-                                <td><button onClick={() => handleButtonClick(show._id)}>{show.showtime}</button></td>
-                                <td>{show.price}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            ) : (
-                <p>No shows available.</p>
-            )}
+            
             {shows ? (
         <table className={styles.table}>
           <thead className={styles.thead}>

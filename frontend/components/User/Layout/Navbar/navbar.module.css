@@ -37,3 +37,22 @@
     left: 800px;
     top: 16px;
 }
+
+.booking button{
+    color: rgb(255, 255, 255);
+    background-color: rgb(248, 131, 68);
+    font-size: 12px;
+    height: 25px;
+    line-height: 25px;
+    width: 100px;
+    text-align: center;
+    border-radius: 4px;
+    border: 1px solid rgb(248, 131, 68);
+    position: relative;
+    left: 700px;
+    top: 16px;
+}
+.booking a{
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+}

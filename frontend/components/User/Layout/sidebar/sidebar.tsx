@@ -1,9 +1,8 @@
 import React from 'react';
-import styles from './adminHome.module.css'; // Import the CSS module for styling
+import styles from './sidebar.module.css'; // Import the CSS module for styling
 
-const Dashboard = () => {
+const Sidebar = () => {
     return (
-        <div className={styles.dashboard}>
             <nav className={styles.sidebar}>
                 <h2>Admin Dashboard</h2>
                 <ul>
@@ -13,12 +12,7 @@ const Dashboard = () => {
                     <li><a href="/admin/showtime">Showtimes</a></li>
                 </ul>
             </nav>
-            <main className={styles.content}>
-                <h1>Welcome to the Admin Dashboard</h1>
-                {/* <p>Select an option from the sidebar to manage the content.</p> */}
-            </main>
-        </div>
     );
 };
 
-export default Dashboard;
+export default Sidebar;

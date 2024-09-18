@@ -82,6 +82,7 @@ const PaymentPage = () => {
         signature: response.razorpay_signature,
         seats,
         showId,
+        userId
       }),
     })
       .then((res) => res.json())

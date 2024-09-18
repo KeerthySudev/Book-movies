@@ -11,9 +11,38 @@ export default function BookingSummary() {
     const seatIDs = searchParams.get('seatIDs');
     // ?.split(',');
     const showId = searchParams.get('showID');
+    const movie = searchParams.get('movie');
+    const theatre = searchParams.get('theatre');
+    const showtime = searchParams.get('showtime');
     const totalPrice = searchParams.get('total');
-    const userId = '66dfe95bf56a51458f4ff32b';
+    const [userId, setUserId] = useState('');
     const [seats, setSeats] = useState([]);
+    const [phoneNumber, setPhoneNumber] = useState('+916282571196');
+    const [authenticated, setAuthenticated] = useState('');
+
+
+    useEffect(() => {
+        const checkSession = async () => {
+          try {
+            const response = await fetch('http://localhost:5000/api/session', {
+              credentials: 'include', 
+            });
+    
+            if (response.ok) {
+              const data = await response.json();
+              setAuthenticated(data.authenticated);
+              setUserId(data.authenticated._id);
+              console.log(data);
+            } else {
+              console.error('Failed to fetch session data:', response.statusText);
+            }
+          } catch (error) {
+            console.error('Error fetching session data:', error);
+          }
+        };
+        checkSession();
+  
+    }, []);
 
     const loadRazorpayScript = () => {
       return new Promise((resolve) => {
@@ -60,9 +89,30 @@ export default function BookingSummary() {
         }
       };
 
-      // const handlePayment = () => {
-      //   router.push(`/user/payment?seatIDs=${seatIDs}&showID=${showId}&total=${totalPrice}`);
-      // };
+      const handleSendMessage = async () => {
+        try {
+          const res = await fetch('http://localhost:5000/api/user/send-whatsapp', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ phoneNumber, movie, seatIDs, theatre, showtime, totalPrice}),
+          });
+          
+          const data = await res.json();
+          console.log('Server response:', data); // Log server response for debugging
+      
+          if (data.success) {
+            alert('Message sent successfully!');
+          } else {
+            alert('Failed to send message.');
+          }
+        } catch (error) {
+          console.error('Error sending message:', error);
+          alert('Error sending message.');
+        }
+      
+    };
 
       const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -126,11 +176,19 @@ export default function BookingSummary() {
           .then((data) => {
             if (data.success) {
               alert('Payment successful!');
+              handleSendMessage();
               router.push('/user/movies');
             } else {
               alert('Payment failed!');
             }
           });
+      };
+
+
+    
+
+      const handleClick = () => {
+        window.location.href = 'http://localhost:5000/api/home/google'; 
       };
   return (
     <main>
@@ -141,15 +199,36 @@ export default function BookingSummary() {
           <strong>Seat IDs:</strong> {seatIDs}
         </p>
         <p>
-          <strong>Show ID:</strong> {showId}
+          <strong>Movie:</strong> {movie}
+        </p>
+        <p>
+          <strong>Theatre:</strong> {theatre}
+        </p>
+        <p>
+          <strong>Showtime:</strong> {showtime}
         </p>
         <p>
           <strong>Total Price:</strong> ₹{totalPrice}
         </p>
+        <label>Phone Number (including country code):</label>
+          <input
+            type="text"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            readOnly
+          />
       </div>
-      <button onClick={handlePayment} className={styles.payButton}>
-        Pay
-      </button>
+      {!authenticated ? (
+       <div>
+       <button onClick={handleClick} className={styles.payButton}>Sign In to pay</button>
+     </div>
+            
+          ) : <button onClick={handlePayment} className={styles.payButton}>
+          Pay
+        </button>}
+
+
+      
     </div>
     </main>
   );

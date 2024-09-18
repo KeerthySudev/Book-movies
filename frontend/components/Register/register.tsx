@@ -5,7 +5,7 @@ import GoogleButton from 'react-google-button';
 
 const GoogleSignInButton = () => {
   const handleClick = () => {
-    window.location.href = 'http://localhost:5000/api/home/google'; // Redirect to Express server for Google sign-in
+    window.location.href = 'http://localhost:5000/api/home/google'; 
   };
   // const redirectToGoogle = () => {
   //   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;

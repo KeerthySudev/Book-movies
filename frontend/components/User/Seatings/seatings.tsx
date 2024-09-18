@@ -13,10 +13,14 @@ const Seatings: React.FC<{ showId: string }> = ({ showId }) => {
   const [showModal, setShowModal] = useState(true);
   const [seats, setSeats] = useState([]);
   const [details, setDetails] = useState();
+  const [theatre, setTheatre] = useState();
+  const [movie, setMovie] = useState();
+  const [showtime, setShowtime] = useState();
   const [seatCount, setSeatCount ] = useState(1);
   const params = useParams();
   const { id } = params;
   const totalPrice = seatCount * details;
+
 
 
 
@@ -27,7 +31,7 @@ const Seatings: React.FC<{ showId: string }> = ({ showId }) => {
         const data = await response.json();
 
         const groupedSeats = data.seats.reduce((acc: { [key: string]: any[] }, seat: any) => {
-          const row = seat.seatId.charAt(0); // Assuming row ID is the first character (e.g., 'A')
+          const row = seat.seatId.charAt(0); 
           if (!acc[row]) {
             acc[row] = [];
           }
@@ -37,6 +41,9 @@ const Seatings: React.FC<{ showId: string }> = ({ showId }) => {
         setDetails(data.price);
         setSeats(data.seats);
         setSeatsByRow(groupedSeats);
+        setTheatre(data.theatre.name);
+              setMovie(data.movie.title);
+              setShowtime(data.showtime);
 
       } catch (error) {
         console.error('Failed to fetch seats:', error);
@@ -44,6 +51,7 @@ const Seatings: React.FC<{ showId: string }> = ({ showId }) => {
     };
 
     fetchSeats();
+
   }, [id]);
 
 
@@ -113,49 +121,66 @@ const Seatings: React.FC<{ showId: string }> = ({ showId }) => {
 
   const handleBookNow = () => {
     const seatIDsString = selectedSeats.join(','); // Convert seat IDs array to a string
-    router.push(`/user/buyTickets?seatIDs=${seatIDsString}&showID=${id}&total=${totalPrice}`);
+    router.push(`/user/buyTickets?seatIDs=${seatIDsString}&showID=${id}&total=${totalPrice}&movie=${movie}&theatre=${theatre}&showtime=${showtime}`);
   };
 
+ 
+
   return (
-    <><div className={styles.container}>
+  <><div className={styles.container}>
     <h1>Select Your Seats</h1>
     {showModal && (
-              <div className={styles.modal}>
+        <div className={styles.modal}>
             <h2>Select Number of Seats</h2>
             <input type="number" value={seatCount} onChange={(e: any) => setSeatCount(e.target.value)} min="1" />
-            <button onClick={handleSaveSeats}>Save</button>
-          </div>
-             )}
+            <button onClick={handleSaveSeats} className={styles.saveButton}>Save</button>
+        </div>
+    )}
     <div className={styles.seatMap}>
-      PRICE:{details}
-      NO:OF TICKETS:<input type="number" value={seatCount} onChange={(e: any) => setSeatCount(e.target.value)} min="1" />
+        <div className={styles.details}>
+            PRICE: <span className={styles.priceDetails}>{details}</span>
+            <div>
+            <span className={styles.ticketLabel}>NO: OF TICKETS:</span>
+            <input
+                type="number"
+                value={seatCount}
+                onChange={(e: any) => setSeatCount(e.target.value)}
+                min="1"
+                className={styles.ticketInput}
+            />
+            </div>
+           
+        </div>
         {Object.keys(seatsByRow).map(row => (
-          <div key={row} className={styles.row}>
-            <div className={styles.rowLabel}>{row}</div>
-            {seatsByRow[row].map((seat: any) => (
-              <button
-                key={seat.seatId}
-                className={`${styles.seat} ${selectedSeats.includes(seat.seatId) ? styles.selected : ''} ${!seat.isAvailable ? styles.booked : ''}`}
-                onClick={() => seat.isAvailable && handleSeatClick(seat.seatId)}
-                disabled={!seat.isAvailable}
-              >
-                {seat.seatId}
-              </button>
-            ))}
-          </div>
+            <div key={row} className={styles.row}>
+                <div className={styles.rowLabel}>{row}</div>
+                {seatsByRow[row].map((seat: any) => (
+                    <button
+                        key={seat.seatId}
+                        className={`${styles.seat} ${selectedSeats.includes(seat.seatId) ? styles.selected : ''} ${!seat.isAvailable ? styles.booked : ''}`}
+                        onClick={() => seat.isAvailable && handleSeatClick(seat.seatId)}
+                        disabled={!seat.isAvailable}
+                    >
+                        {seat.seatId}
+                    </button>
+                ))}
+            </div>
         ))}
-      </div>
-    
-      {selectedSeats.length == seatCount && 
+    </div>
+
+   
+
+
+    {selectedSeats.length == seatCount && 
       <button 
       onClick={handleBookNow} 
       className={styles.confirmButton}>
         Pay Rs.{totalPrice} 
     </button>
     }
-      
-  </div>
-    </>
+</div>
+</>
+
   );
   
 };

@@ -2,8 +2,10 @@
 
 import styles from './movie.module.css';
 import React, { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 
 const AddMovieForm = () => {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState("");
   const [language, setLanguage] = useState("");
@@ -45,6 +47,28 @@ fetchMovies();
 
   const handleFileChange = (e) => {
     setPosterFile(e.target.files[0]);
+  };
+
+  const onDelete = async (movieId) => {
+    if (confirm('Are you sure you want to delete this movie?')) {
+      try {
+        const res = await fetch(`http://localhost:5000/api/admin/deleteMovie?movieId=${movieId}`, {
+          method: 'DELETE',
+        });
+
+        if (res.ok) {
+          // Remove the deleted movie from the state
+          setMovies(movies.filter(movie => movie._id !== movieId));
+          alert('Movie deleted successfully');
+        } else {
+          const errorData = await res.json();
+          alert(`Failed to delete movie: ${errorData.error}`);
+        }
+      } catch (error) {
+        console.error('Error deleting movie:', error);
+        alert('An error occurred while deleting the movie');
+      }
+    }
   };
 
   const handleCastChange = (e) => {
@@ -119,14 +143,43 @@ fetchMovies();
     } 
   };
 
-  return (
-    <>
-    <div>
-  <button onClick={test}>getMovieInception</button>
-
+  const handleLogout = async () => {
+    try {
+      // Call the backend logout route
+      const response = await fetch('http://localhost:5000/api/home/logout', {
+        method: 'GET',
+        credentials: 'include', // Make sure cookies are included in the request
+      });
   
-</div>
+      if (response.ok) {
+        window.alert('Logged out successfully');
+        router.push('http://localhost:3000'); // Redirect to the home or login page after logout
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
+  return (
+  
+    <>
+  {/* <button onClick={test}>getMovieInception</button> */}
+  <div className={styles.dashboard}>
+      <nav className={styles.sidebar}>
+        <h2>Admin Dashboard</h2>
+        <ul>
+          <li><a href="/admin/movie">Movies</a></li>
+          <li><a href="/admin/theatre">Theatres</a></li>
+          <li><a href="/admin/showtime">Showtimes</a></li>
+          <li onClick={handleLogout}>Logout</li>
+        </ul>
+      </nav>
+
+      <div className={styles.content}>
       
+
       <div className={styles.cardContainer}>
             {movies ? (
                 movies.map((movie) => (
@@ -149,13 +202,13 @@ fetchMovies();
                                     onClick={() => onEdit(movie._id)}
                                 >
                                     Edit
-                                </button>
+                                </button> */}
                                 <button 
                                     className={styles.button} 
                                     onClick={() => onDelete(movie._id)}
                                 >
                                     Delete
-                                </button> */}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -213,7 +266,10 @@ fetchMovies();
 
           <button type="submit">Add Movie</button>
       </form>
-        </>
+      </div>
+    </div>
+</>
+
   );
 };
 
